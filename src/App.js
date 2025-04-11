@@ -1,78 +1,93 @@
-import "./App.css";
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import './index.css';
 
 function App() {
   const [isOpen, setIsOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    phone: '',
+    dob: '',
+  });
 
-  const clickHandler = () => {
-    setIsOpen(true);
-  };
+  const openModal = () => setIsOpen(true);
+  const closeModal = () => setIsOpen(false);
 
   const closeHandler = (e) => {
     if (e.target === e.currentTarget) {
-      setIsOpen(false);
+      closeModal();
     }
+  };
+
+  const changeHandler = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value,
+    });
   };
 
   const submitHandler = (e) => {
     e.preventDefault();
-    const phone = e.target.phoneNo.value;
-    const dob = new Date(e.target.dob.value);
 
-    if (phone.length !== 10) {
-      alert("Invalid phone number. Please enter a 10-digit phone number.");
-    } else if (dob.getTime() > Date.now()) {
-      alert("Invalid date of birth. Date of birth cannot be in the future.");
-    } else {
-      alert("Form submitted successfully!");
-      e.target.username.value = "";
-      e.target.email.value = "";
-      e.target.phoneNo.value = "";
-      e.target.dob.value = "";
-      setIsOpen(false);
+    const { username, email, phone, dob } = formData;
+
+    if (!username || !email || !phone || !dob) {
+      alert('Please fill out all fields');
+      return;
     }
+
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(email)) {
+      alert('Invalid email');
+      return;
+    }
+
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phone)) {
+      alert('Invalid phone number');
+      return;
+    }
+
+    const dobDate = new Date(dob);
+    const today = new Date();
+    if (dobDate > today) {
+      alert('Invalid date of birth');
+      return;
+    }
+
+    alert('Form submitted successfully!');
+    closeModal();
   };
 
   return (
-    <div className="App">
-      <div className="modal">
-        <h1>User Details Modal</h1>
-        <button onClick={clickHandler}>Open Form</button>
-        {isOpen && (
-          <div className="modal-overlay" onClick={closeHandler}>
-            <div className="modal-content">
-              <form onSubmit={submitHandler}>
-                <h2>Fill Details</h2>
-                <div className="input-group">
-                  <label htmlFor="username">Username:</label>
-                  <input type="text" name="username" id="username" required />
-                </div>
-                <div className="input-group">
-                  <label htmlFor="email">Email Address:</label>
-                  <input type="email" name="email" id="email" required />
-                </div>
-                <div className="input-group">
-                  <label htmlFor="phoneNo">Phone Number:</label>
-                  <input
-                    type="number"
-                    name="phoneNo"
-                    id="phone"
-                    required
-                    onWheel={(e) => e.target.blur()}
-                  />
-                </div>
-                <div className="input-group">
-                  <label htmlFor="dob">Date of Birth:</label>
-                  <input type="date" name="dob" id="dob" required />
-                </div>
-                <button type="submit" className="submit-button">
-                  Submit
-                </button>
-              </form>
-            </div>
+    <div id="root" className="app">
+      <button onClick={openModal}>Open Form</button>
+
+      {isOpen && (
+        <div className="modal-overlay" onClick={closeHandler}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <form onSubmit={submitHandler}>
+              <label>
+                Username:
+                <input type="text" id="username" onChange={changeHandler} />
+              </label>
+              <label>
+                Email:
+                <input type="text" id="email" onChange={changeHandler} />
+              </label>
+              <label>
+                Phone:
+                <input type="text" id="phone" onChange={changeHandler} />
+              </label>
+              <label>
+                Date of Birth:
+                <input type="date" id="dob" onChange={changeHandler} />
+              </label>
+              <button type="submit" className="submit-button">Submit</button>
+            </form>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
