@@ -1,95 +1,103 @@
-import React, { useState } from 'react';
-import './index.css';
+import React, { useState, useSyncExternalStore } from "react";
+import "./App.css";
 
-function App() {
-  const [isOpen, setIsOpen] = useState(false);
+const Modal = () => {
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    phone: '',
-    dob: '',
-  });
+    username: "",
+    email: "",
+    phone: "",
+    dob: "",
+  });  
+  
+  const [modalON, setModalON] = useState(false);
 
-  const openModal = () => setIsOpen(true);
-  const closeModal = () => setIsOpen(false);
-
-  const closeHandler = (e) => {
-    if (e.target === e.currentTarget) {
-      closeModal();
+  const handleSubmit = (evt) => {
+    evt.preventDefault();
+    let error = false;
+    if (formData.phone.length !== 10) {
+      alert("Invalid phone number. Please enter a 10-digit phone number.");
+      error = true;
     }
-  };
+    if (new Date(formData.dob) > new Date()) {
+      alert("Invalid date of birth. Date of birth cannot be in future.");
+      error = true;
+    }
 
-  const changeHandler = (e) => {
+    if (!formData.email.includes("@") || !formData.email.includes(".")) {
+      alert("Invalid email. Please check your email address.");
+      error = true;
+    }
+
+    if (error) return;
+
     setFormData({
-      ...formData,
-      [e.target.id]: e.target.value,
+      username: "",
+      email: "",
+      phone: "",
+      dob: "",
     });
+    setModalON(false);
   };
 
-  const submitHandler = (e) => {
-    e.preventDefault();
-
-    const { username, email, phone, dob } = formData;
-
-    if (!username || !email || !phone || !dob) {
-      alert('Please fill out all fields');
-      return;
-    }
-
-    const emailRegex = /^\S+@\S+\.\S+$/;
-    if (!emailRegex.test(email)) {
-      alert('Invalid email');
-      return;
-    }
-
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(phone)) {
-      alert('Invalid phone number');
-      return;
-    }
-
-    const dobDate = new Date(dob);
-    const today = new Date();
-    if (dobDate > today) {
-      alert('Invalid date of birth');
-      return;
-    }
-
-    alert('Form submitted successfully!');
-    closeModal();
+  const handleChange = (evt) => {
+    const { value, name } = evt.target;
+    setFormData({ ...formData, [name]: value });
   };
 
   return (
-    <div id="root" className="app">
-      <button onClick={openModal}>Open Form</button>
-
-      {isOpen && (
-        <div className="modal-overlay" onClick={closeHandler}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <form onSubmit={submitHandler}>
-              <label>
-                Username:
-                <input type="text" id="username" onChange={changeHandler} />
-              </label>
-              <label>
-                Email:
-                <input type="text" id="email" onChange={changeHandler} />
-              </label>
-              <label>
-                Phone:
-                <input type="text" id="phone" onChange={changeHandler} />
-              </label>
-              <label>
-                Date of Birth:
-                <input type="date" id="dob" onChange={changeHandler} />
-              </label>
-              <button type="submit" className="submit-button">Submit</button>
+    <div className="Xmodal">
+      <h1>User Details Modal</h1>
+      <button onClick={() => setModalON(true)}>Open Form</button>
+      {modalON ? (
+        <div className="modal" onClick={() => setModalON((prev) => !prev)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Fill Details</h2>
+            <form onSubmit={handleSubmit}>
+              <label htmlFor="username">Username:</label>
+              <input
+                onChange={handleChange}
+                required
+                value={formData.username}
+                name="username"
+                id="username"
+                type="text"
+              />
+              <label htmlFor="email">Email Address:</label>
+              <input
+                onChange={handleChange}
+                required
+                value={formData.email}
+                name="email"
+                id="email"
+                type="email"
+              />
+              <label htmlFor="phone">Phone Number:</label>
+              <input
+                onChange={handleChange}
+                required
+                value={formData.phone}
+                name="phone"
+                id="phone"
+                type="number"
+              />
+              <label htmlFor="dob">Date of birth:</label>
+              <input
+                onChange={handleChange}
+                required
+                value={formData.dob}
+                name="dob"
+                id="dob"
+                type="date"
+              />
+              <button className="submit-button" type="submit">
+                Submit
+              </button>
             </form>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
-}
+};
 
-export default App;
+export default Modal;
